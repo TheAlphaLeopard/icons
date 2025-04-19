@@ -1,5 +1,6 @@
 import os
 import json
+import random
 import requests
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
@@ -10,14 +11,70 @@ class IconScraper:
     def __init__(self, json_path):
         self.json_path = json_path
         self.seen_urls = set()  # Track already processed URLs to avoid duplicates
-        self.headers = {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-                "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            ),
-            "Referer": "https://www.flaticon.com/",
-            "Accept-Language": "en-US,en;q=0.9"
+        self.proxies = self.get_free_proxies()  # Fetch free proxies
+
+    def get_free_proxies(self):
+        """Fetch a list of free proxies from a public proxy list."""
+        proxy_list_url = "https://www.sslproxies.org/"
+        proxies = []
+
+        try:
+            response = requests.get(proxy_list_url, timeout=10)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            # Parse the proxy table
+            rows = soup.select("table#proxylisttable tbody tr")
+            for row in rows:
+                columns = row.find_all("td")
+                if len(columns) >= 2:
+                    ip = columns[0].text.strip()
+                    port = columns[1].text.strip()
+                    proxies.append(f"http://{ip}:{port}")
+        except Exception as e:
+            log_error(f"Error fetching free proxies: {e}")
+
+        print(f"Fetched {len(proxies)} free proxies.")
+        return proxies
+
+    def get_random_headers(self):
+        """Generate random headers to mimic different browsers and devices."""
+        user_agents = [
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1",
+            "Mozilla/5.0 (Android 11; Mobile; rv:89.0) Gecko/89.0 Firefox/89.0",
+        ]
+        referers = [
+            "https://www.google.com/",
+            "https://www.bing.com/",
+            "https://www.yahoo.com/",
+            "https://www.flaticon.com/",
+            "https://duckduckgo.com/",
+        ]
+        accept_languages = [
+            "en-US,en;q=0.9",
+            "en-GB,en;q=0.8",
+            "fr-FR,fr;q=0.7",
+            "de-DE,de;q=0.6",
+            "es-ES,es;q=0.5",
+        ]
+
+        headers = {
+            "User-Agent": random.choice(user_agents),
+            "Referer": random.choice(referers),
+            "Accept-Language": random.choice(accept_languages),
         }
+        return headers
+
+    def get_random_proxy(self):
+        """Get a random proxy from the list."""
+        if not self.proxies:
+            log_error("No proxies available.")
+            return None
+        return {"http": random.choice(self.proxies), "https": random.choice(self.proxies)}
 
     def fetch_collections(self):
         """Fetch all collection URLs from the main packs page."""
@@ -25,7 +82,9 @@ class IconScraper:
         collections = []
 
         try:
-            response = requests.get(base_url, headers=self.headers, timeout=30)
+            headers = self.get_random_headers()
+            proxy = self.get_random_proxy()
+            response = requests.get(base_url, headers=headers, proxies=proxy, timeout=30)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
 
@@ -45,7 +104,9 @@ class IconScraper:
         icons = []
 
         try:
-            response = requests.get(collection_url, headers=self.headers, timeout=30)
+            headers = self.get_random_headers()
+            proxy = self.get_random_proxy()
+            response = requests.get(collection_url, headers=headers, proxies=proxy, timeout=30)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
 

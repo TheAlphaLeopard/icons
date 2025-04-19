@@ -23,3 +23,8 @@ Call log:
 2025-04-19 00:04:30,384 - ERROR - Timeout while waiting for collections to load.
 2025-04-19 00:08:08,705 - ERROR - Error fetching collections: 403 Client Error: Forbidden for url: https://www.flaticon.com/packs/
 2025-04-19 00:10:09,588 - ERROR - Error fetching collections: 403 Client Error: Forbidden for url: https://www.flaticon.com/packs/
+2025-04-19 00:11:03,763 - ERROR - Error fetching collections: 403 Client Error: Forbidden for url: https://www.flaticon.com/packs/
+2025-04-19 00:15:03,144 - ERROR - Error fetching collections: 403 Client Error: Forbidden for url: https://www.flaticon.com/packs/
+2025-04-19 00:17:03,518 - ERROR - Error fetching collections: HTTPSConnectionPool(host='www.flaticon.com', port=443): Max retries exceeded with url: /packs/ (Caused by ProxyError('Unable to connect to proxy', NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7512f8f7c470>: Failed to resolve 'proxy2.example.com' ([Errno -2] Name or service not known)")))
+2025-04-19 00:19:41,361 - ERROR - No proxies available.
+2025-04-19 00:19:41,407 - ERROR - Error fetching collections: 403 Client Error: Forbidden for url: https://www.flaticon.com/packs/
